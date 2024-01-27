@@ -1,3 +1,3 @@
 My terraform learning journey :)
 First project:
-![Screenshot](screenshot.png)
+![Screenshot](https://github.com/lunatic-def/Terraform-Project/blob/main/First_project/First-project.JPG)
