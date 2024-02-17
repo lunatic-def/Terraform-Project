@@ -1,1 +1,1 @@
-![Screenshot](![image](https://github.com/lunatic-def/Terraform-Project/assets/111355545/bdf9a44e-d1a5-4717-86eb-bf445188e9a6))
+![Screenshot]([![image](https://github.com/lunatic-def/Terraform-Project/assets/111355545/bdf9a44e-d1a5-4717-86eb-bf445188e9a6)](https://github.com/lunatic-def/Terraform-Project/blob/main/AWS_certified_advanced_network/3.1_NetworkEx/3.1.JPG)https://github.com/lunatic-def/Terraform-Project/blob/main/AWS_certified_advanced_network/3.1_NetworkEx/3.1.JPG)
