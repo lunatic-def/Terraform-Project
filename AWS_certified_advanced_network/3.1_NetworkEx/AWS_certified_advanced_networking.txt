@@ -1,0 +1,103 @@
+NOTE: 
+
+3.1: Create a gateway VPC Endpoint for Amazon S3
+- Access data privately
+1. Create a new VPC. ok
+2. Create two subnets in your VPC: one private and one public. ok
+3. Launch one instance, the bastion instance, in the public subnet. Launch another 
+instance, the private instance, in the private subnet. The instances can be any type 
+or size. You will use the bastion instance to reach the private instance. The private 
+instance will be used to access Amazon S3.
+4. Configure security groups such that the bastion instance is accessible over TCP port 
+22 from your IP address. The private instance should be accessible over TCP port 22 
+from the bastion instance.
+5. Create an Internet gateway and attach it to your VPC.
+6. Create a route table for both the private and public subnet. Associate the route tables 
+with their respective subnets.
+7. Create a 0.0.0.0/0 route to the Internet gateway in the route table associated with the 
+public subnet
+8. Create an Amazon S3 bucket.
+9. Upload an object such as a text file into the bucket.
+10. Make the Internet gateway Amazon S3 object public.
+11. Use Secure Shell (SSH) to access the bastion instance.
+12. You should not be able to access the Amazon S3 file from the private instance. You 
+can also try accessing the file from the bastion instance. You can use a tool such as 
+curl or a web browser to test access to the object. This test should show that you are 
+using the Internet to access the Amazon S3 endpoint.
+13. Create a Gateway VPC Endpoint for Amazon S3.
+14. Specify the private subnet in your VPC that will use the endpoint.
+15. Check the route table entries for the private subnet. It should now include a route to 
+the endpoint for the Amazon S3 prefix list.
+16. Use SSH from the bastion instance to access the private instance.
+17. Access the Amazon S3 object from your private instance. You can use a browser on 
+Windows or a tool such as curl on Linux to test access.
+18. To confirm that you are not accessing the Amazon S3 object over a public interface, 
+check the route table for the private subnet in which your private instance is located. 
+Confirm that there are no routes to the Internet gateway. Additionally, you can check 
+the Amazon S3 access logs and look for access from private addresses from within  your VPC
+===================================================================================== 
+3.2 Create a VPC Endpoint service
+- Creating the provider side of the AWS PrivateLink endpoint
+1. Create two new VPCs. You can also reuse existing VPCs. Name your VPCs consumer and provider for clarity
+2. Create a public subnet in the same Availability Zone in both VPCs. 
+3. In the provider VPC, create a web server in the public subnet. A t2.micro or similar 
+instance will work. Confi gure the web server to receive a public IP address. This will 
+act as your shared service. 
+4. The inbound security group should allow TCP port 80 from all IP addresses. 
+5. The inbound security group should also allow SSH so that you can confi gure a web 
+server. It’s recommended to choose the My IP Address option as the IP source for 
+TCP port 22. 
+6. SSH to the public IP address of the instance. 
+7. Install the HTTP web server package.   
+ $ sudo yum install -y httpd 
+ $ sudo service httpd start   
+8. You should be able to check the webpage at http://<public-ip>/ for your web 
+server now. If not, check your security group confi guration. 
+9. In the Amazon EC2 Console, click on Load Balancers and create a new Network Load 
+Balancer. 
+10. The Network Load Balancer should be internal and listen on port 80. Choose your public 
+VPC and the Availability Zone in which your public subnet and web server are located. 
+11. Create a new target group on TCP port 80, and choose instance for the target type. 
+12. Choose your newly-created web server as a target. 
+13. Finish launching the Network Load Balancer. It may take a few minutes to create. 
+14. After the load balancer is available, go into the Amazon VPC confi guration console. 
+Click on Endpoint Services. 
+15. Click on Create Endpoint Service. 
+16. Associate the newly-created load balancer to the endpoint service. Confirm that 
+acceptance is required for the endpoint. 
+17. You will receive a “Service Name”. Copy the name for the next exercise. 
+===================================================================================== 
+3.3 Create VPC endpoint
+In this exercise, you will consume the AWS PrivateLink endpoint that you created in the 
+previous exercise. In this exercise, we’re choosing a VPC in the same account. The 
+consumer side also works for any VPC or account within the same AWS Region. You will 
+finish connectivity by creating the consumer side of the AWS PrivateLink endpoint.
+1. In the consumer VPC, launch another instance. You will use this instance to test 
+access to the endpoint. Choose a t2.micro or equivalent instance type. Launch it in the 
+public subnet of the consumer VPC. Allow incoming SSH access from your IP address.
+2. While the instance is launching, request access to the provider endpoint that was just 
+created. In the VPC configuration console, click on Endpoints. Click on Create Endpoint.
+3. Choose Find service by name, and enter or paste the Service Name from the last 
+exercise and press Verify.
+4. Select the consumer VPC for the VPC selection, and select the public subnet in which 
+the testing instance is located.
+5. At the bottom of the screen, create a new security group that allows TCP port 80 in 
+and apply it to the endpoint.
+6. Click Create endpoint.
+7. Go back to Endpoint Services in the Amazon VPC console, and select the endpoint 
+you created. On the Endpoint Connections tab, you should now see a Pending Acceptance request. In the Actions, you can accept the request.
+8. Your endpoint should now be functional in the public subnet of the consumer VPC. To 
+test this, SSH to the public address of the test instance in the consumer VPC.
+9. On the test instance, connect to the endpoint service. From the Endpoints page in the 
+Amazon VPC console, you can select the first DNS name listed in the Details tab. This 
+will be different than the service name that was used to find and create the endpoint. 
+$ curl <endpoint name>
+Example: $ curl vpce-01847ae84f118942c-xvi8p3vm.vpce-svc-0d669f84acd4283ee 
+.us-east-2.vpce.amazonaws.com
+10. You may also want to check the IP address in your VPC that you’re using for this 
+connectivity. 
+$ curl <endpoint name> 
+11. If you wanted to extend this further, you could create another consumer VPC with 
+the same CIDR range to prove that the endpoint works with VPCs with overlapping or 
+duplicate CIDR ranges. You can also test AWS PrivateLink for AWS Services with an 
+Amazon EC2 endpoint or an endpoint from the AWS Marketplace
